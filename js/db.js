@@ -1,6 +1,8 @@
 import { openDB } from "idb";
 
 let db;
+let nome;
+let idade;
 
 async function createDB() { 
     try {
@@ -25,7 +27,7 @@ async function createDB() {
 
 window.addEventListener("DOMContentLoaded", async event => { 
     createDB(); 
-    document.getElementById("input"); 
+
     document.getElementById("btnSalvar").addEventListener("click", addData); 
     document.getElementById("btnListar").addEventListener("click", getData); 
 });
@@ -33,9 +35,11 @@ window.addEventListener("DOMContentLoaded", async event => {
 
 
 async function addData() {
+    nome = document.getElementById("inputnome").value;
+    idade = document.getElementById("inputidade").value; 
     const tx = await db.transaction('pessoas', 'readwrite');
     const store = tx.objectStore('pessoas');
-    store.add({ nome: 'Fulano' }); 
+    store.add({ nome: nome, idade: idade   }); 
     await tx.done;
 }
 
