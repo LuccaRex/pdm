@@ -41,6 +41,9 @@ async function addData() {
     const store = tx.objectStore('pessoas');
     store.add({ nome: nome, idade: idade   }); 
     await tx.done;
+
+    document.getElementById("inputnome").value = "";
+    document.getElementById("inputidade").value = "";
 }
 
 async function getData() {
@@ -49,13 +52,74 @@ async function getData() {
     }
     const tx = await db.transaction('pessoas', 'readonly') 
     const store = tx.objectStore('pessoas');
-    const value = await store.getAll();
-    if (value) {
-        showResult("Dados do banco: " + JSON.stringify(value))
+    const values = await store.getAll();
+
+    if (values.length > 0) {
+        clearResult();
+        values.forEach((value) => {
+            createCard(value);
+        });
     } else {
-        showResult("Não há nenhum dado no banco!")
+        showResult("Não há nenhum dado no banco!");
     }
 }
+
+function createCard(value) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    const content = document.createElement('p');
+    content.textContent = `Nome: ${value.nome}, Idade: ${value.idade}`;
+    
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Deletar';
+    deleteButton.addEventListener('click', () => deleteData(value.nome));
+    
+    const updateButton = document.createElement('button');
+    updateButton.textContent = 'Atualizar';
+    updateButton.addEventListener('click', () => updateData(value.nome));
+    
+    card.appendChild(content);
+    card.appendChild(deleteButton);
+    card.appendChild(updateButton);
+    
+    document.querySelector("output").appendChild(card);
+}
+
+async function deleteData(nome) {
+    const tx = await db.transaction('pessoas', 'readwrite');
+    const store = tx.objectStore('pessoas');
+    
+    await store.delete(nome);
+    
+    await tx.done;
+    
+    clearResult();
+}
+
+async function updateData(nome) {
+    const newIdade = prompt("Digite a nova idade");
+    
+    const tx = await db.transaction('pessoas', 'readwrite');
+    const store = tx.objectStore('pessoas');
+    
+    let data = await store.get(nome);
+    
+    data.idade = newIdade;
+    
+    await store.put(data);
+    
+    await tx.done;
+    
+    clearResult();
+}
+
+function clearResult() {
+    const output = document.querySelector("output");
+    while (output.firstChild) {
+        output.removeChild(output.firstChild);
+    }
+  }
 
 function showResult(text) {
     document.querySelector("output").innerHTML = text;
